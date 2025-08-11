@@ -1,0 +1,12 @@
+# Backend
+bin/
+obj/
+
+# Database
+*.config
+/migrations/*.sql
+/migrations/*.backup
+*.bak
+
+# IDE
+.idea/

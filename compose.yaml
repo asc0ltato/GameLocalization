@@ -1,0 +1,49 @@
+﻿services:
+  gamelocalization.api:
+    image: gamelocalization
+    build:
+      context: .
+      dockerfile: backend/GameLocalization.Api/Dockerfile
+    ports:
+      - "8080:8080"
+    container_name: gamelocalization_api
+    depends_on:
+      db_postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+  db_postgres:
+    image: postgres:alpine3.22
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ascoltat0
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: GameLocalizationDB
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    container_name: db_postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ascoltat0 -d GameLocalizationDB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - app-network
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://gamelocalization_api:8080/api
+    depends_on:
+      - gamelocalization.api
+    networks:
+      - app-network
+volumes:
+  db_data:
+networks:
+  app-network:
+    driver: bridge
